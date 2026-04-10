@@ -10,10 +10,35 @@ export default function HomePage({ data, navigate, onPostClick }) {
 
   return (
     <div className="page-anim">
-      {/* Hero section unchanged */}
-      <div style={{ background: "linear-gradient(135deg, #1a4a7a 0%, #0d2d4f 100%)", color: "#fff", padding: "64px 20px 72px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.04) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.03) 0%, transparent 50%)" }} />
-        <div style={{ maxWidth: 720, margin: "0 auto", position: "relative" }}>
+      {/* Hero section with image background */}
+      <div 
+        style={{ 
+          backgroundImage: "url('/prieska.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          position: "relative",
+          color: "#fff", 
+          padding: "64px 20px 72px", 
+          textAlign: "center",
+          isolation: "isolate"
+        }}
+      >
+        {/* Dark overlay for text readability */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          background: "rgba(0,0,0,0.6)",
+          zIndex: -1
+        }} />
+        {/* Optional decorative radial gradients */}
+        <div style={{ 
+          position: "absolute", 
+          inset: 0, 
+          backgroundImage: "radial-gradient(circle at 20% 50%, rgba(255,255,255,0.04) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.03) 0%, transparent 50%)",
+          pointerEvents: "none",
+          zIndex: 0
+        }} />
+        <div style={{ maxWidth: 720, margin: "0 auto", position: "relative", zIndex: 1 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.12)", padding: "6px 16px", borderRadius: 20, fontSize: 12, fontWeight: 600, marginBottom: 20, letterSpacing: 0.5 }}>NC077 · Established 2000</div>
           <h1 className="hero-text" style={{ fontSize: 42, fontWeight: 800, lineHeight: 1.15, marginBottom: 18, textShadow: "0 2px 12px rgba(0,0,0,0.2)" }}>Serving Our Communities<br />with Pride & Purpose</h1>
           <p className="hero-sub" style={{ fontSize: 18, color: "#a8c4e0", maxWidth: 560, margin: "0 auto 32px", lineHeight: 1.7 }}>Your gateway to municipal services, news, documents and events for Prieska, Niekerkshoop, Marydale and surrounding areas.</p>
@@ -24,35 +49,22 @@ export default function HomePage({ data, navigate, onPostClick }) {
         </div>
       </div>
 
-      {/* Stats bar – now with clickable links */}
+      {/* Stats bar – clickable links (unchanged) */}
       <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
         <div className="stat-grid" style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
-          {/* Wards (static) */}
           <div style={{ padding: "20px 24px", textAlign: "center", borderRight: "1px solid #e2e8f0" }}>
             <div style={{ fontSize: 26, fontWeight: 800, color: "#1a4a7a" }}>6</div>
             <div style={{ fontSize: 13, color: "#4a5568", fontWeight: 600 }}>Wards</div>
             <div style={{ fontSize: 11, color: "#718096" }}>electoral wards</div>
           </div>
-
-          {/* Population (static) */}
           <div style={{ padding: "20px 24px", textAlign: "center", borderRight: "1px solid #e2e8f0" }}>
             <div style={{ fontSize: 26, fontWeight: 800, color: "#1a4a7a" }}>~32K</div>
             <div style={{ fontSize: 13, color: "#4a5568", fontWeight: 600 }}>Population</div>
             <div style={{ fontSize: 11, color: "#718096" }}>residents served</div>
           </div>
-
-          {/* Open Tenders – clickable */}
           <button
             onClick={() => navigate("tenders")}
-            style={{
-              padding: "20px 24px",
-              textAlign: "center",
-              borderRight: "1px solid #e2e8f0",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              transition: "background 0.15s",
-            }}
+            style={{ padding: "20px 24px", textAlign: "center", borderRight: "1px solid #e2e8f0", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
@@ -60,18 +72,9 @@ export default function HomePage({ data, navigate, onPostClick }) {
             <div style={{ fontSize: 13, color: "#4a5568", fontWeight: 600 }}>Open Tenders</div>
             <div style={{ fontSize: 11, color: "#718096" }}>opportunities</div>
           </button>
-
-          {/* Documents – clickable */}
           <button
             onClick={() => navigate("documents")}
-            style={{
-              padding: "20px 24px",
-              textAlign: "center",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              transition: "background 0.15s",
-            }}
+            style={{ padding: "20px 24px", textAlign: "center", background: "none", border: "none", cursor: "pointer", transition: "background 0.15s" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
@@ -82,7 +85,7 @@ export default function HomePage({ data, navigate, onPostClick }) {
         </div>
       </div>
 
-      {/* Rest of the component remains unchanged */}
+      {/* Rest of the component unchanged */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 20px" }}>
         {urgentNotice && (
           <div style={{ background: "#fff3cd", border: "1px solid #ffc107", borderLeft: "4px solid #e67e22", borderRadius: 8, padding: "14px 18px", marginBottom: 32, display: "flex", gap: 12, alignItems: "flex-start" }}>

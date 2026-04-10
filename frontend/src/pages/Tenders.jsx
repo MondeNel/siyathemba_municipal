@@ -1,6 +1,5 @@
 import { useState } from "react";
 import PageHeader from "../components/UI/PageHeader";
-import EmptyState from "../components/UI/EmptyState";
 import { catColor } from "../utils/helpers";
 
 export default function TendersPage({ data }) {
@@ -23,7 +22,12 @@ export default function TendersPage({ data }) {
           ))}
         </div>
       </div>
-      {filtered.length === 0 && <EmptyState message="No tenders match your filters." />}
+      {filtered.length === 0 && (
+        <div style={{ textAlign: "center", padding: "48px 20px", color: "#a0aec0" }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>-</div>
+          <p style={{ fontSize: 15 }}>No tenders match your filters.</p>
+        </div>
+      )}
       <div style={{ display: "grid", gap: 14 }}>
         {filtered.map(t => (
           <div key={t.id} className="card-hover" style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "20px 22px" }}>

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import PageHeader from "../components/UI/PageHeader";
-import EmptyState from "../components/UI/EmptyState";
 import { Icon } from "../components/UI/Icons";
 import { catColor } from "../utils/helpers";
 
@@ -16,13 +15,18 @@ export default function DocumentsPage({ data }) {
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20, alignItems: "center" }}>
         <div style={{ position: "relative", flex: "1 1 250px" }}>
           <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#a0aec0" }}><Icon.Search /></span>
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search documents…" style={{ width: "100%", padding: "9px 12px 9px 38px", border: "1.5px solid #e2e8f0", borderRadius: 8, fontSize: 14, outline: "none", background: "#fff" }} />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search documents..." style={{ width: "100%", padding: "9px 12px 9px 38px", border: "1.5px solid #e2e8f0", borderRadius: 8, fontSize: 14, outline: "none", background: "#fff" }} />
         </div>
         {categories.map(cat => (
           <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "7px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "1.5px solid", borderColor: filter === cat ? "#1a4a7a" : "#e2e8f0", background: filter === cat ? "#1a4a7a" : "#fff", color: filter === cat ? "#fff" : "#4a5568" }}>{cat}</button>
         ))}
       </div>
-      {filtered.length === 0 && <EmptyState message="No documents match your search." />}
+      {filtered.length === 0 && (
+        <div style={{ textAlign: "center", padding: "48px 20px", color: "#a0aec0" }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>-</div>
+          <p style={{ fontSize: 15 }}>No documents match your search.</p>
+        </div>
+      )}
       <div style={{ display: "grid", gap: 12 }}>
         {filtered.map(doc => (
           <div key={doc.id} className="card-hover" style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "18px 20px", display: "flex", alignItems: "center", gap: 16 }}>

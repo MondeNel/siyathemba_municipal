@@ -9,9 +9,9 @@ import DocumentsPage from "./pages/Documents";
 import NoticesPage from "./pages/Notices";
 import TendersPage from "./pages/Tenders";
 import ContactPage from "./pages/Contact";
+import CouncilPage from "./pages/Council";
 import ArticleView from "./pages/ArticleView";
 import { useData } from "./hooks/useData";
-import CouncilPage from "./pages/Council";
 
 function App() {
   const [page, setPage] = useState("home");
@@ -69,11 +69,18 @@ function App() {
         }
       `}</style>
 
+      {/* Top bar */}
       <div style={{ background: "#0d2d4f", color: "#a8c4e0", fontSize: 12, padding: "6px 0" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.6 19.79 19.79 0 0 1 1.6 4.97 2 2 0 0 1 3.6 2.79h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.4a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.6 17.77z"/></svg> 053 492 3420</span>
-            <span className="desktop-only" style={{ display: "flex", alignItems: "center", gap: 6 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> info@siyathemba.gov.za</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.6 19.79 19.79 0 0 1 1.6 4.97 2 2 0 0 1 3.6 2.79h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 10.4a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.6 17.77z"/></svg>
+              053 492 3420
+            </span>
+            <span className="desktop-only" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              info@siyathemba.gov.za
+            </span>
           </div>
           <span>Mon–Fri 07:30–16:00 | Northern Cape, South Africa</span>
         </div>
@@ -93,7 +100,7 @@ function App() {
             {page === "notices" && <NoticesPage data={data} />}
             {page === "tenders" && <TendersPage data={data} />}
             {page === "contact" && <ContactPage />}
-            {page === "council" && <CouncilPage />}
+            {page === "council" && <CouncilPage data={data} setData={setData} />}
           </>
         )}
       </main>

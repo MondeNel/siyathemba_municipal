@@ -13,6 +13,8 @@ export const CAT_COLOURS = {
   open: "#155724",
   awarded: "#004085",
   closed: "#721c24",
+  tender: "#155724",
+  quotation: "#2471a3",
 };
 
 export function catColor(cat) {
