@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/UI/PageHeader";
 import PostCard from "../components/UI/PostCard";
 
-export default function NewsPage({ data, onPostClick }) {
+export default function NewsPage({ data }) {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("All");
   const categories = ["All", ...new Set(data.posts.map(p => p.category))];
   const filtered = filter === "All" ? data.posts : data.posts.filter(p => p.category === filter);
@@ -16,7 +18,7 @@ export default function NewsPage({ data, onPostClick }) {
         ))}
       </div>
       <div style={{ display: "grid", gap: 16 }}>
-        {filtered.map(post => <PostCard key={post.id} post={post} onClick={() => onPostClick(post)} large />)}
+        {filtered.map(post => <PostCard key={post.id} post={post} large />)}
       </div>
     </div>
   );

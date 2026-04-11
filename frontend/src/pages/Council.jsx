@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Icon } from "../components/UI/Icons";
+import { useAdmin } from "../context/AdminContext";
 
 // Inject keyframes globally once
 const injectKeyframes = () => {
@@ -123,6 +124,8 @@ export default function CouncilPage() {
     injectKeyframes();
   }, []);
 
+  const { isAdmin } = useAdmin();  // get admin status
+
   const [mayor, setMayor] = useState(initialMayor);
   const [councillors, setCouncillors] = useState(initialCouncillors);
 
@@ -151,6 +154,10 @@ export default function CouncilPage() {
           c.id === editingCouncillor.id ? { ...formData, id: c.id } : c
         )
       );
+    } else {
+      // Add new councillor
+      const newId = Date.now().toString();
+      setCouncillors((prev) => [...prev, { ...formData, id: newId }]);
     }
     setEditingCouncillor(null);
     setFormData({});
@@ -168,9 +175,15 @@ export default function CouncilPage() {
     setEditingMayor(true);
   };
 
-  const openEditCouncillor = (councillor) => {
-    setFormData(councillor);
-    setEditingCouncillor(councillor);
+  const openEditCouncillor = (councillor = null) => {
+    if (councillor) {
+      setFormData(councillor);
+      setEditingCouncillor(councillor);
+    } else {
+      // Add new councillor
+      setFormData({ name: "", role: "", photo: "", phone: "", email: "", address: "" });
+      setEditingCouncillor({ id: null });
+    }
   };
 
   const handleFileChange = (callback) => (e) => {
@@ -229,13 +242,15 @@ export default function CouncilPage() {
           >
             Office of the Mayor
           </h2>
-          <button
-            onClick={openEditMayor}
-            className="btn-outline"
-            style={{ fontSize: 12 }}
-          >
-            Edit
-          </button>
+          {isAdmin && (
+            <button
+              onClick={openEditMayor}
+              className="btn-outline"
+              style={{ fontSize: 12 }}
+            >
+              Edit
+            </button>
+          )}
         </div>
         <div
           style={{
@@ -304,6 +319,15 @@ export default function CouncilPage() {
           >
             Councillors
           </h2>
+          {isAdmin && (
+            <button
+              onClick={() => openEditCouncillor()}
+              className="btn-primary"
+              style={{ fontSize: 12, padding: "6px 12px" }}
+            >
+              + Add Councillor
+            </button>
+          )}
         </div>
         <div
           style={{
@@ -324,40 +348,42 @@ export default function CouncilPage() {
                 position: "relative",
               }}
             >
-              {/* Edit + Delete buttons */}
-              <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>
-                <button
-                  onClick={() => openEditCouncillor(c)}
-                  className="btn-outline"
-                  style={{ fontSize: 11, padding: "4px 10px" }}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => deleteCouncillor(c.id)}
-                  style={{
-                    background: "#fee2e2",
-                    border: "none",
-                    borderRadius: 6,
-                    padding: "4px 8px",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#dc2626",
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.background = "#fecaca";
-                    e.target.style.transform = "scale(1.02)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.background = "#fee2e2";
-                    e.target.style.transform = "scale(1)";
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
+              {/* Edit + Delete buttons – visible only to admin */}
+              {isAdmin && (
+                <div style={{ position: "absolute", top: 12, right: 12, display: "flex", gap: 6 }}>
+                  <button
+                    onClick={() => openEditCouncillor(c)}
+                    className="btn-outline"
+                    style={{ fontSize: 11, padding: "4px 10px" }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteCouncillor(c.id)}
+                    style={{
+                      background: "#fee2e2",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "4px 8px",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "#dc2626",
+                      cursor: "pointer",
+                      transition: "all 0.15s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = "#fecaca";
+                      e.target.style.transform = "scale(1.02)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = "#fee2e2";
+                      e.target.style.transform = "scale(1)";
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
               <div
                 style={{
                   display: "flex",
@@ -486,10 +512,10 @@ export default function CouncilPage() {
         </StyledModal>
       )}
 
-      {/* Edit Councillor Modal */}
+      {/* Edit/Add Councillor Modal */}
       {editingCouncillor && (
         <StyledModal
-          title="Edit Councillor"
+          title={editingCouncillor.id ? "Edit Councillor" : "Add Councillor"}
           onClose={() => setEditingCouncillor(null)}
           onSave={saveCouncillor}
         >
@@ -564,7 +590,7 @@ export default function CouncilPage() {
   );
 }
 
-// Styled Modal Component
+// Styled Modal Component (unchanged)
 function StyledModal({ title, children, onClose, onSave }) {
   return (
     <div
@@ -663,7 +689,7 @@ function StyledModal({ title, children, onClose, onSave }) {
   );
 }
 
-// Reusable form field with styled inputs
+// Reusable form field with styled inputs (unchanged)
 function FormField({ label, children }) {
   const inputStyles = {
     width: "100%",

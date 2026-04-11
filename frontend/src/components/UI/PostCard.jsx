@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Icon } from "./Icons";
 
 function catColor(cat) {
@@ -12,9 +13,15 @@ function catColor(cat) {
   return colors[cat] || "#2c3e50";
 }
 
-export default function PostCard({ post, onClick, large }) {
+export default function PostCard({ post, large }) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/news/${post.id}`);
+  };
+
   return (
-    <div onClick={onClick} className="card-hover"
+    <div onClick={handleClick} className="card-hover"
       style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "18px 20px", cursor: "pointer", display: "flex", gap: 16, alignItems: "flex-start" }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center", flexWrap: "wrap" }}>

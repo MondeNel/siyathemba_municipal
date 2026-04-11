@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BrowserRouter, Routes, Route, useNavigate, useParams, Navigate } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import Chatbot from "./components/Chatbot";
@@ -12,26 +13,12 @@ import ContactPage from "./pages/Contact";
 import CouncilPage from "./pages/Council";
 import ArticleView from "./pages/ArticleView";
 import { useData } from "./hooks/useData";
+import { AdminProvider } from "./context/AdminContext";
 
-function App() {
-  const [page, setPage] = useState("home");
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [chatOpen, setChatOpen] = useState(false);
+// Wrapper component that provides data to pages
+function AppContent() {
   const { data, setData } = useData();
-
-  const navigate = (p) => {
-    setPage(p);
-    setSelectedPost(null);
-    window.scrollTo(0, 0);
-  };
-
-  const handlePostClick = (post) => {
-    setSelectedPost(post);
-  };
-
-  const handleBack = () => {
-    setSelectedPost(null);
-  };
+  const [chatOpen, setChatOpen] = useState(false);
 
   return (
     <div style={{ minHeight: "100vh", fontFamily: "'Segoe UI', system-ui, sans-serif", background: "#f4f6f8", color: "#1a202c" }}>
@@ -67,6 +54,10 @@ function App() {
         @media (min-width: 769px) {
           .mobile-only { display: none !important; }
         }
+        @keyframes modalFadeIn {
+          from { opacity: 0; transform: scale(0.98); }
+          to { opacity: 1; transform: scale(1); }
+        }
       `}</style>
 
       {/* Top bar */}
@@ -86,28 +77,43 @@ function App() {
         </div>
       </div>
 
-      <Navbar currentPage={page} onNavigate={navigate} />
-
+      <Navbar data={data} />
       <main style={{ minHeight: "calc(100vh - 180px)" }}>
-        {selectedPost ? (
-          <ArticleView post={selectedPost} onBack={handleBack} />
-        ) : (
-          <>
-            {page === "home" && <HomePage data={data} navigate={navigate} onPostClick={handlePostClick} />}
-            {page === "news" && <NewsPage data={data} onPostClick={handlePostClick} />}
-            {page === "events" && <EventsPage data={data} />}
-            {page === "documents" && <DocumentsPage data={data} />}
-            {page === "notices" && <NoticesPage data={data} />}
-            {page === "tenders" && <TendersPage data={data} />}
-            {page === "contact" && <ContactPage />}
-            {page === "council" && <CouncilPage data={data} setData={setData} />}
-          </>
-        )}
+        <Routes>
+          <Route path="/" element={<HomePage data={data} />} />
+          <Route path="/news" element={<NewsPage data={data} />} />
+          <Route path="/news/:id" element={<ArticleViewWrapper data={data} />} />
+          <Route path="/events" element={<EventsPage data={data} />} />
+          <Route path="/documents" element={<DocumentsPage data={data} />} />
+          <Route path="/notices" element={<NoticesPage data={data} />} />
+          <Route path="/tenders" element={<TendersPage data={data} />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/council" element={<CouncilPage data={data} setData={setData} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
-
-      <Footer />
+      <Footer data={data} />
       <Chatbot data={data} open={chatOpen} setOpen={setChatOpen} />
     </div>
+  );
+}
+
+// Wrapper for article view to get post by ID from URL
+function ArticleViewWrapper({ data }) {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const post = data.posts.find(p => p.id === id);
+  if (!post) return <Navigate to="/news" replace />;
+  return <ArticleView post={post} onBack={() => navigate(-1)} />;
+}
+
+function App() {
+  return (
+    <AdminProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </AdminProvider>
   );
 }
 
