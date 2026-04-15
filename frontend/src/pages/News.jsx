@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import { useData } from '../context/DataContext';
+import { useReadItems } from '../context/ReadItemsContext';
 import PageHeader from '../components/UI/PageHeader';
 import PostCard from '../components/UI/PostCard';
 import AdminModal from '../components/Admin/AdminModal';
@@ -8,10 +9,15 @@ import AdminModal from '../components/Admin/AdminModal';
 export default function NewsPage() {
   const { isAdmin } = useAdmin();
   const { posts, addPost, editPost, removePost } = useData();
+  const { markAsRead } = useReadItems();
   const [filter, setFilter] = useState('All');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [form, setForm] = useState({ title: '', content: '', category: '', author: '' });
+
+  useEffect(() => {
+    markAsRead('news');
+  }, [markAsRead]);
 
   const categories = ['All', ...new Set(posts.map(p => p.category))];
   const filtered = filter === 'All' ? posts : posts.filter(p => p.category === filter);

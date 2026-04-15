@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Icon } from '../UI/Icons';
 import { useAdmin } from "../../context/AdminContext";
 import { useData } from "../../context/DataContext";
+import { useReadItems } from "../../context/ReadItemsContext";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { posts, events, documents, notices, tenders } = useData();
   const { isAdmin } = useAdmin();
+  const { timestamps, markAsRead } = useReadItems(); // We need to expose timestamps from context
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminEmail, setAdminEmail] = useState("");
@@ -18,25 +20,23 @@ export default function Navbar() {
 
   const currentPath = location.pathname === "/" ? "home" : location.pathname.slice(1);
 
-  const getNewCount = (items) => {
-    if (!items || !Array.isArray(items)) return 0;
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  // Helper function to get unseen count
+  const getUnseenCount = (pageType, items) => {
+    const lastVisit = timestamps[pageType] ? new Date(timestamps[pageType]) : new Date(0);
     return items.filter(item => {
       if (!item.created_at) return false;
-      const itemDate = new Date(item.created_at);
-      return itemDate >= sevenDaysAgo;
+      return new Date(item.created_at) > lastVisit;
     }).length;
   };
 
   const showBadges = !isAdmin;
-  const newPosts = showBadges ? getNewCount(posts) : 0;
-  const newEvents = showBadges ? getNewCount(events) : 0;
-  const newDocuments = showBadges ? getNewCount(documents) : 0;
-  const newNotices = showBadges ? getNewCount(notices) : 0;
-  const newTenders = showBadges ? getNewCount(tenders) : 0;
+  const newPosts = showBadges ? getUnseenCount('news', posts) : 0;
+  const newEvents = showBadges ? getUnseenCount('events', events) : 0;
+  const newDocuments = showBadges ? getUnseenCount('documents', documents) : 0;
+  const newNotices = showBadges ? getUnseenCount('notices', notices) : 0;
+  const newTenders = showBadges ? getUnseenCount('tenders', tenders) : 0;
   const vacancies = notices.filter(n => n.category === "vacancy");
-  const newVacancies = showBadges ? getNewCount(vacancies) : 0;
+  const newVacancies = showBadges ? getUnseenCount('vacancies', vacancies) : 0;
 
   const navItems = [
     { id: "home", label: "Home", icon: <Icon.Home />, path: "/", badge: 0 },

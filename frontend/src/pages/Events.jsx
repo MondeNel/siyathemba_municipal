@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAdmin } from '../context/AdminContext';
 import { useData } from '../context/DataContext';
+import { useReadItems } from '../context/ReadItemsContext';
 import PageHeader from '../components/UI/PageHeader';
 import EventCard from '../components/UI/EventCard';
 import AdminModal from '../components/Admin/AdminModal';
@@ -8,9 +9,14 @@ import AdminModal from '../components/Admin/AdminModal';
 export default function EventsPage() {
   const { isAdmin } = useAdmin();
   const { events, addEvent, editEvent, removeEvent } = useData();
+  const { markAsRead } = useReadItems();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [form, setForm] = useState({ title: '', description: '', date: '', time: '', location: '', category: '' });
+
+  useEffect(() => {
+    markAsRead('events');
+  }, [markAsRead]);
 
   const today = new Date().toISOString().split("T")[0];
   const upcoming = events.filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));

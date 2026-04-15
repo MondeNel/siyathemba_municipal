@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdmin } from '../context/AdminContext';
 import { useData } from '../context/DataContext';
+import { useReadItems } from '../context/ReadItemsContext';
 import PageHeader from "../components/UI/PageHeader";
 import { catColor } from "../utils/helpers";
 import AdminModal from '../components/Admin/AdminModal';
@@ -9,12 +10,17 @@ import api from '../api/axios';
 export default function TendersPage() {
   const { isAdmin } = useAdmin();
   const { tenders, addTender, editTender, removeTender } = useData();
+  const { markAsRead } = useReadItems();
   const [status, setStatus] = useState("open");
   const [cat, setCat] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTender, setEditingTender] = useState(null);
   const [form, setForm] = useState({ reference: '', title: '', description: '', category: 'tender', closing_date: '', status: 'open', file_url: '' });
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    markAsRead('tenders');
+  }, [markAsRead]);
 
   const filtered = tenders.filter(t => (status === "all" || t.status === status) && (cat === "all" || t.category === cat));
 

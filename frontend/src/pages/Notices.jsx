@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdmin } from '../context/AdminContext';
 import { useData } from '../context/DataContext';
+import { useReadItems } from '../context/ReadItemsContext';
 import PageHeader from "../components/UI/PageHeader";
 import { catColor } from "../utils/helpers";
 import AdminModal from '../components/Admin/AdminModal';
@@ -9,11 +10,16 @@ import api from '../api/axios';
 export default function NoticesPage() {
   const { isAdmin } = useAdmin();
   const { notices, addNotice, editNotice, removeNotice } = useData();
+  const { markAsRead } = useReadItems();
   const [tab, setTab] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingNotice, setEditingNotice] = useState(null);
   const [form, setForm] = useState({ title: '', content: '', category: 'public', urgency: 'normal', file_url: '' });
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    markAsRead('notices');
+  }, [markAsRead]);
 
   const tabs = [{ id: "all", label: "All" }, { id: "public", label: "Public Notices" }, { id: "media", label: "Media" }, { id: "vacancy", label: "Vacancies" }];
   const filtered = tab === "all" ? notices : notices.filter(n => n.category === tab);

@@ -15,6 +15,7 @@ import CouncilPage from "./pages/Council";
 import ArticleView from "./pages/ArticleView";
 import { AdminProvider } from "./context/AdminContext";
 import { DataProvider, useData } from "./context/DataContext";
+import { ReadItemsProvider } from "./context/ReadItemsContext";
 
 function AppContent() {
   const { loading, posts, events, documents, notices, tenders } = useData();
@@ -94,7 +95,6 @@ function AppContent() {
           <Route path="/notices" element={<NoticesPage />} />
           <Route path="/tenders" element={<TendersPage />} />
           <Route path="/vacancies" element={<VacanciesPage />} />
-          <Route path="/vacancies" element={<VacanciesPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/council" element={<CouncilPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -119,9 +119,11 @@ function App() {
   return (
     <AdminProvider>
       <DataProvider>
-        <BrowserRouter>
-          <AppContent />
-        </BrowserRouter>
+        <ReadItemsProvider>
+          <BrowserRouter>
+            <AppContent />
+          </BrowserRouter>
+        </ReadItemsProvider>
       </DataProvider>
     </AdminProvider>
   );

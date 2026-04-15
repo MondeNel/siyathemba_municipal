@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdmin } from '../context/AdminContext';
 import { useData } from '../context/DataContext';
+import { useReadItems } from '../context/ReadItemsContext';
 import PageHeader from "../components/UI/PageHeader";
 import AdminModal from '../components/Admin/AdminModal';
 import api from '../api/axios';
@@ -8,13 +9,17 @@ import api from '../api/axios';
 export default function VacanciesPage() {
   const { isAdmin } = useAdmin();
   const { notices, addNotice, editNotice, removeNotice } = useData();
+  const { markAsRead } = useReadItems();
   const vacancies = notices.filter(n => n.category === "vacancy");
   
   const [modalOpen, setModalOpen] = useState(false);
   const [editingVacancy, setEditingVacancy] = useState(null);
   const [form, setForm] = useState({ title: '', content: '', category: 'vacancy', urgency: 'normal', file_url: '' });
   const [uploading, setUploading] = useState(false);
-  const [selectedVacancy, setSelectedVacancy] = useState(null); // for detail modal
+
+  useEffect(() => {
+    markAsRead('vacancies');
+  }, [markAsRead]);
 
   const openCreate = () => {
     setEditingVacancy(null);

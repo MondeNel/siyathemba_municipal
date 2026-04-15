@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAdmin } from '../context/AdminContext';
 import { useData } from '../context/DataContext';
+import { useReadItems } from '../context/ReadItemsContext';
 import PageHeader from "../components/UI/PageHeader";
 import { Icon } from "../components/UI/Icons";
 import { catColor } from "../utils/helpers";
@@ -10,6 +11,7 @@ import api from '../api/axios';
 export default function DocumentsPage() {
   const { isAdmin } = useAdmin();
   const { documents, addDocument, editDocument, removeDocument } = useData();
+  const { markAsRead } = useReadItems();
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -17,8 +19,12 @@ export default function DocumentsPage() {
   const [form, setForm] = useState({ title: '', description: '', file_url: '', category: '', file_size: '', file_type: 'PDF', downloads: 0 });
   const [uploading, setUploading] = useState(false);
 
+  useEffect(() => {
+    markAsRead('documents');
+  }, [markAsRead]);
+
   const categories = ["All", ...new Set(documents.map(d => d.category))];
-  const filtered = documents.filter(d => (filter === "All" || d.category === d.category) && d.title.toLowerCase().includes(search.toLowerCase()));
+  const filtered = documents.filter(d => (filter === "All" || d.category === filter) && d.title.toLowerCase().includes(search.toLowerCase()));
 
   const openCreate = () => {
     setEditingDoc(null);
