@@ -199,6 +199,8 @@ export default function Footer() {
                   </div>
                   <div style={{ lineHeight: 1.8, fontSize: 15, color: "#334155" }}>
                     <p>{selectedVacancy.content}</p>
+{selectedVacancy.file_url && <div style={{ marginTop: 16 }}><a href={`http://127.0.0.1:8000${selectedVacancy.file_url}`} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display: "inline-block", fontSize: 13, padding: "6px 16px", textDecoration: "none" }}>í³„ Download Attachment</a></div>}
+{selectedVacancy.file_url && <div style={{ marginTop: 16 }}><a href={`http://127.0.0.1:8000${selectedVacancy.file_url}`} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display: "inline-block", fontSize: 13, padding: "6px 16px", textDecoration: "none" }}>í³„ Download Attachment</a></div>}
                   </div>
                   <div style={{ marginTop: 24, background: "#f0fdf4", border: "1px solid #dcfce7", borderRadius: 8, padding: "12px 16px" }}>
                     <p style={{ fontSize: 13, color: "#166534" }}>

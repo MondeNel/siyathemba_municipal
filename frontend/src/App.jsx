@@ -9,6 +9,7 @@ import EventsPage from "./pages/Events";
 import DocumentsPage from "./pages/Documents";
 import NoticesPage from "./pages/Notices";
 import TendersPage from "./pages/Tenders";
+import VacanciesPage from "./pages/Vacancies";
 import ContactPage from "./pages/Contact";
 import CouncilPage from "./pages/Council";
 import ArticleView from "./pages/ArticleView";
@@ -92,6 +93,8 @@ function AppContent() {
           <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/notices" element={<NoticesPage />} />
           <Route path="/tenders" element={<TendersPage />} />
+          <Route path="/vacancies" element={<VacanciesPage />} />
+          <Route path="/vacancies" element={<VacanciesPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/council" element={<CouncilPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

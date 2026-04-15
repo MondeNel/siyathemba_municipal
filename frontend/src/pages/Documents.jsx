@@ -5,6 +5,7 @@ import PageHeader from "../components/UI/PageHeader";
 import { Icon } from "../components/UI/Icons";
 import { catColor } from "../utils/helpers";
 import AdminModal from '../components/Admin/AdminModal';
+import api from '../api/axios';
 
 export default function DocumentsPage() {
   const { isAdmin } = useAdmin();
@@ -14,13 +15,14 @@ export default function DocumentsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDoc, setEditingDoc] = useState(null);
   const [form, setForm] = useState({ title: '', description: '', file_url: '', category: '', file_size: '', file_type: 'PDF', downloads: 0 });
+  const [uploading, setUploading] = useState(false);
 
   const categories = ["All", ...new Set(documents.map(d => d.category))];
-  const filtered = documents.filter(d => (filter === "All" || d.category === filter) && d.title.toLowerCase().includes(search.toLowerCase()));
+  const filtered = documents.filter(d => (filter === "All" || d.category === d.category) && d.title.toLowerCase().includes(search.toLowerCase()));
 
   const openCreate = () => {
     setEditingDoc(null);
-    setForm({ title: '', description: '', file_url: '#', category: '', file_size: '', file_type: 'PDF', downloads: 0 });
+    setForm({ title: '', description: '', file_url: '', category: '', file_size: '', file_type: 'PDF', downloads: 0 });
     setModalOpen(true);
   };
 
@@ -30,7 +32,29 @@ export default function DocumentsPage() {
     setModalOpen(true);
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    setUploading(true);
+    try {
+      const res = await api.post('/upload/document', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setForm({ ...form, file_url: res.data.file_url, file_size: (res.data.size / 1024).toFixed(1) + ' KB', file_type: file.name.split('.').pop().toUpperCase() });
+    } catch (err) {
+      alert('Upload failed: ' + err.response?.data?.detail);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (!form.file_url) {
+      alert('Please upload a file first');
+      return;
+    }
     if (editingDoc) {
       await editDocument(editingDoc.id, form);
     } else {
@@ -75,7 +99,7 @@ export default function DocumentsPage() {
                 <button onClick={() => handleDelete(doc.id)} style={{ background: '#fee2e2', border: 'none', borderRadius: 6, padding: '4px 12px', fontSize: 12, fontWeight: 600, color: '#dc2626', cursor: 'pointer' }}>Delete</button>
               </div>
             )}
-            <div style={{ width: 46, height: 52, background: "#fee2e2", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ fontSize: 11, fontWeight: 800, color: "#c53030" }}>PDF</span></div>
+            <div style={{ width: 46, height: 52, background: "#fee2e2", borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><span style={{ fontSize: 11, fontWeight: 800, color: "#c53030" }}>{doc.file_type}</span></div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: "#1a202c" }}>{doc.title}</div>
               <div style={{ fontSize: 13, color: "#718096", marginBottom: 6, lineHeight: 1.5 }}>{doc.description}</div>
@@ -85,7 +109,7 @@ export default function DocumentsPage() {
                 <span style={{ fontSize: 12, color: "#a0aec0" }}>{doc.downloads} downloads</span>
               </div>
             </div>
-            <button className="btn-primary" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 7, fontSize: 13, padding: "8px 16px" }}><Icon.Download /> Download</button>
+            <a href={`http://127.0.0.1:8000${doc.file_url}`} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 7, fontSize: 13, padding: "8px 16px", textDecoration: 'none' }}><Icon.Download /> Download</a>
           </div>
         ))}
       </div>
@@ -93,10 +117,11 @@ export default function DocumentsPage() {
       <AdminModal title={editingDoc ? "Edit Document" : "Add Document"} isOpen={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleSubmit}>
         <div><label>Title</label><input className="admin-input" value={form.title} onChange={e => setForm({...form, title: e.target.value})} /></div>
         <div><label>Description</label><textarea className="admin-input" rows={3} value={form.description} onChange={e => setForm({...form, description: e.target.value})} /></div>
-        <div><label>File URL</label><input className="admin-input" value={form.file_url} onChange={e => setForm({...form, file_url: e.target.value})} /></div>
+        <div><label>Upload File (PDF/Word)</label><input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={uploading} /></div>
+        {uploading && <div>Uploading...</div>}
+        {form.file_url && <div style={{ fontSize: 12, color: 'green' }}>File uploaded: {form.file_url}</div>}
         <div><label>Category</label><input className="admin-input" value={form.category} onChange={e => setForm({...form, category: e.target.value})} /></div>
-        <div><label>File Size (e.g., 2.4 MB)</label><input className="admin-input" value={form.file_size} onChange={e => setForm({...form, file_size: e.target.value})} /></div>
-        <div><label>File Type</label><input className="admin-input" value={form.file_type} onChange={e => setForm({...form, file_type: e.target.value})} /></div>
+        <div><label>File Size</label><input className="admin-input" value={form.file_size} onChange={e => setForm({...form, file_size: e.target.value})} placeholder="e.g., 2.4 MB" /></div>
         <div><label>Downloads</label><input className="admin-input" type="number" value={form.downloads} onChange={e => setForm({...form, downloads: parseInt(e.target.value)})} /></div>
       </AdminModal>
     </div>

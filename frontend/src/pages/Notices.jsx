@@ -4,6 +4,7 @@ import { useData } from '../context/DataContext';
 import PageHeader from "../components/UI/PageHeader";
 import { catColor } from "../utils/helpers";
 import AdminModal from '../components/Admin/AdminModal';
+import api from '../api/axios';
 
 export default function NoticesPage() {
   const { isAdmin } = useAdmin();
@@ -11,24 +12,47 @@ export default function NoticesPage() {
   const [tab, setTab] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingNotice, setEditingNotice] = useState(null);
-  const [form, setForm] = useState({ title: '', content: '', category: 'public', urgency: 'normal' });
+  const [form, setForm] = useState({ title: '', content: '', category: 'public', urgency: 'normal', file_url: '' });
+  const [uploading, setUploading] = useState(false);
 
   const tabs = [{ id: "all", label: "All" }, { id: "public", label: "Public Notices" }, { id: "media", label: "Media" }, { id: "vacancy", label: "Vacancies" }];
   const filtered = tab === "all" ? notices : notices.filter(n => n.category === tab);
 
   const openCreate = () => {
     setEditingNotice(null);
-    setForm({ title: '', content: '', category: 'public', urgency: 'normal' });
+    setForm({ title: '', content: '', category: 'public', urgency: 'normal', file_url: '' });
     setModalOpen(true);
   };
 
   const openEdit = (notice) => {
     setEditingNotice(notice);
-    setForm({ title: notice.title, content: notice.content, category: notice.category, urgency: notice.urgency });
+    setForm({ title: notice.title, content: notice.content, category: notice.category, urgency: notice.urgency, file_url: notice.file_url || '' });
     setModalOpen(true);
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    setUploading(true);
+    try {
+      const res = await api.post('/upload/notice', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setForm({ ...form, file_url: res.data.file_url });
+    } catch (err) {
+      alert('Upload failed: ' + err.response?.data?.detail);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (form.category === 'vacancy' && !form.file_url) {
+      alert('Please upload a vacancy document (PDF/Word)');
+      return;
+    }
     if (editingNotice) {
       await editNotice(editingNotice.id, form);
     } else {
@@ -71,7 +95,12 @@ export default function NoticesPage() {
               </div>
             </div>
             <p style={{ fontSize: 14, color: "#4a5568", lineHeight: 1.7 }}>{notice.content}</p>
-            <div style={{ marginTop: 10, fontSize: 12, color: "#a0aec0" }}>{new Date(notice.created_at).toLocaleDateString()}</div>
+            <div style={{ marginTop: 10, fontSize: 12, color: "#a0aec0", display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>{new Date(notice.created_at).toLocaleDateString()}</span>
+              {notice.file_url && (
+                <a href={`http://127.0.0.1:8000${notice.file_url}`} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ fontSize: 12, padding: "4px 12px", textDecoration: 'none' }}>Download Attachment</a>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -92,6 +121,14 @@ export default function NoticesPage() {
             <option value="urgent">Urgent</option>
           </select>
         </div>
+        {form.category === 'vacancy' && (
+          <div>
+            <label>Upload Vacancy Document (PDF/Word)</label>
+            <input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={uploading} />
+            {uploading && <div>Uploading...</div>}
+            {form.file_url && <div style={{ fontSize: 12, color: 'green' }}>File uploaded: {form.file_url}</div>}
+          </div>
+        )}
       </AdminModal>
     </div>
   );

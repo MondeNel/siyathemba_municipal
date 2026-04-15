@@ -8,12 +8,13 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { posts, events, documents, notices, tenders } = useData();
+  const { isAdmin } = useAdmin();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const { isAdmin, login, logout } = useAdmin();
+  const { login, logout } = useAdmin();
 
   const currentPath = location.pathname === "/" ? "home" : location.pathname.slice(1);
 
@@ -28,11 +29,14 @@ export default function Navbar() {
     }).length;
   };
 
-  const newPosts = getNewCount(posts);
-  const newEvents = getNewCount(events);
-  const newDocuments = getNewCount(documents);
-  const newNotices = getNewCount(notices);
-  const newTenders = getNewCount(tenders);
+  const showBadges = !isAdmin;
+  const newPosts = showBadges ? getNewCount(posts) : 0;
+  const newEvents = showBadges ? getNewCount(events) : 0;
+  const newDocuments = showBadges ? getNewCount(documents) : 0;
+  const newNotices = showBadges ? getNewCount(notices) : 0;
+  const newTenders = showBadges ? getNewCount(tenders) : 0;
+  const vacancies = notices.filter(n => n.category === "vacancy");
+  const newVacancies = showBadges ? getNewCount(vacancies) : 0;
 
   const navItems = [
     { id: "home", label: "Home", icon: <Icon.Home />, path: "/", badge: 0 },
@@ -41,6 +45,7 @@ export default function Navbar() {
     { id: "documents", label: "Documents", icon: <Icon.Doc />, path: "/documents", badge: newDocuments },
     { id: "notices", label: "Notices", icon: <Icon.Bell />, path: "/notices", badge: newNotices },
     { id: "tenders", label: "Tenders", icon: <Icon.Tender />, path: "/tenders", badge: newTenders },
+    { id: "vacancies", label: "Vacancies", icon: <Icon.Briefcase />, path: "/vacancies", badge: newVacancies },
     { id: "council", label: "Council", icon: <Icon.Briefcase />, path: "/council", badge: 0 },
     { id: "contact", label: "Contact", icon: <Icon.Phone />, path: "/contact", badge: 0 },
   ];

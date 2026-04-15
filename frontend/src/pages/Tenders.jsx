@@ -4,6 +4,7 @@ import { useData } from '../context/DataContext';
 import PageHeader from "../components/UI/PageHeader";
 import { catColor } from "../utils/helpers";
 import AdminModal from '../components/Admin/AdminModal';
+import api from '../api/axios';
 
 export default function TendersPage() {
   const { isAdmin } = useAdmin();
@@ -12,23 +13,46 @@ export default function TendersPage() {
   const [cat, setCat] = useState("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTender, setEditingTender] = useState(null);
-  const [form, setForm] = useState({ reference: '', title: '', description: '', category: 'tender', closing_date: '', status: 'open' });
+  const [form, setForm] = useState({ reference: '', title: '', description: '', category: 'tender', closing_date: '', status: 'open', file_url: '' });
+  const [uploading, setUploading] = useState(false);
 
   const filtered = tenders.filter(t => (status === "all" || t.status === status) && (cat === "all" || t.category === cat));
 
   const openCreate = () => {
     setEditingTender(null);
-    setForm({ reference: '', title: '', description: '', category: 'tender', closing_date: '', status: 'open' });
+    setForm({ reference: '', title: '', description: '', category: 'tender', closing_date: '', status: 'open', file_url: '' });
     setModalOpen(true);
   };
 
   const openEdit = (tender) => {
     setEditingTender(tender);
-    setForm({ reference: tender.reference, title: tender.title, description: tender.description, category: tender.category, closing_date: tender.closing_date, status: tender.status });
+    setForm({ reference: tender.reference, title: tender.title, description: tender.description, category: tender.category, closing_date: tender.closing_date, status: tender.status, file_url: tender.file_url || '' });
     setModalOpen(true);
   };
 
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    setUploading(true);
+    try {
+      const res = await api.post('/upload/tender', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setForm({ ...form, file_url: res.data.file_url });
+    } catch (err) {
+      alert('Upload failed: ' + err.response?.data?.detail);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (!form.file_url) {
+      alert('Please upload a tender document (PDF/Word)');
+      return;
+    }
     if (editingTender) {
       await editTender(editingTender.id, form);
     } else {
@@ -89,7 +113,9 @@ export default function TendersPage() {
             </div>
             <div style={{ display: "flex", gap: 20, alignItems: "center", paddingTop: 12, borderTop: "1px solid #f0f0f0", flexWrap: "wrap" }}>
               <span style={{ fontSize: 13, color: t.status === "open" ? "#1e8449" : "#718096", fontWeight: 600 }}>{t.status === "open" ? `Closes: ${t.closing_date}` : t.status === "awarded" ? "Awarded" : `Closed: ${t.closing_date}`}</span>
-              {t.status === "open" && (<button className="btn-primary" style={{ fontSize: 13, padding: "7px 18px", marginLeft: "auto" }}>Request Documents</button>)}
+              {t.status === "open" && t.file_url && (
+                <a href={`http://127.0.0.1:8000${t.file_url}`} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ fontSize: 13, padding: "7px 18px", marginLeft: "auto", textDecoration: 'none' }}>Download Tender Doc</a>
+              )}
             </div>
           </div>
         ))}
@@ -113,6 +139,9 @@ export default function TendersPage() {
             <option value="closed">Closed</option>
           </select>
         </div>
+        <div><label>Upload Tender Document (PDF/Word)</label><input type="file" accept=".pdf,.doc,.docx" onChange={handleFileUpload} disabled={uploading} /></div>
+        {uploading && <div>Uploading...</div>}
+        {form.file_url && <div style={{ fontSize: 12, color: 'green' }}>File uploaded: {form.file_url}</div>}
       </AdminModal>
     </div>
   );

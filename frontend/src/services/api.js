@@ -1,5 +1,22 @@
 import api from '../api/axios';
 
+// File uploads
+export const uploadDocumentFile = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post('/uploads/document', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }).then(res => res.data);
+};
+
+export const uploadTenderFile = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post('/uploads/tender', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }).then(res => res.data);
+};
+
 // Posts
 export const fetchPosts = () => api.get('/posts').then(res => res.data);
 export const createPost = (post) => api.post('/posts', post).then(res => res.data);
