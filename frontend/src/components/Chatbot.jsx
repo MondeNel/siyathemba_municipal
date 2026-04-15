@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Icon } from "./UI/Icons";
+import { useData } from "../context/DataContext";
 
 async function askChatbot(message, data) {
   const today = new Date().toISOString().split("T")[0];
@@ -45,13 +46,16 @@ Be concise, helpful and professional. Today is ${today}. For anything you cannot
   return result.content?.[0]?.text || "Please contact us at 053 492 3420 for assistance.";
 }
 
-export default function Chatbot({ data, open, setOpen }) {
+export default function Chatbot({ open, setOpen }) {
+  const { posts, events, tenders, notices } = useData();
   const [messages, setMessages] = useState([
     { role: "bot", text: "Hello! I'm the Siyathemba Municipality assistant. I can help you with events, tenders, documents, contact details and more. How can I assist you today?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
+
+  const data = { posts, events, tenders, notices };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -76,7 +80,6 @@ export default function Chatbot({ data, open, setOpen }) {
 
   return (
     <>
-      {/* FAB button – GREEN */}
       <button
         onClick={() => setOpen(!open)}
         style={{
@@ -103,7 +106,6 @@ export default function Chatbot({ data, open, setOpen }) {
         {open ? <Icon.Close /> : <Icon.Chat />}
       </button>
 
-      {/* Chat window */}
       {open && (
         <div
           style={{
@@ -123,7 +125,6 @@ export default function Chatbot({ data, open, setOpen }) {
             animation: "slideIn 0.25s ease"
           }}
         >
-          {/* Header – GREEN gradient */}
           <div
             style={{
               background: "linear-gradient(135deg, #2e7d32, #1b5e20)",
@@ -152,7 +153,6 @@ export default function Chatbot({ data, open, setOpen }) {
             </div>
           </div>
 
-          {/* Messages */}
           <div
             style={{
               flex: 1,
@@ -218,7 +218,6 @@ export default function Chatbot({ data, open, setOpen }) {
             <div ref={bottomRef} />
           </div>
 
-          {/* Suggestions */}
           <div
             style={{
               padding: "8px 12px",
@@ -255,7 +254,6 @@ export default function Chatbot({ data, open, setOpen }) {
             ))}
           </div>
 
-          {/* Input */}
           <div
             style={{
               padding: "10px 12px",

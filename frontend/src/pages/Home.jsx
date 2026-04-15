@@ -2,21 +2,18 @@ import { useNavigate } from "react-router-dom";
 import { Icon } from "../components/UI/Icons";
 import PostCard from "../components/UI/PostCard";
 import EventCard from "../components/UI/EventCard";
+import { useData } from "../context/DataContext";
 
-export default function HomePage({ data }) {
+export default function HomePage() {
   const navigate = useNavigate();
+  const { posts, events, notices, tenders, documents } = useData();
   const today = new Date().toISOString().split("T")[0];
-  const upcomingEvents = data.events.filter(e => e.date >= today).slice(0, 3);
-  const urgentNotice = data.notices.find(n => n.urgency === "urgent");
-  const openTenders = data.tenders.filter(t => t.status === "open");
-
-  const handlePostClick = (post) => {
-    navigate(`/news/${post.id}`);
-  };
+  const upcomingEvents = events.filter(e => e.date >= today).slice(0, 3);
+  const urgentNotice = notices.find(n => n.urgency === "urgent");
+  const openTenders = tenders.filter(t => t.status === "open");
 
   return (
     <div className="page-anim">
-      {/* Hero section with image background */}
       <div 
         style={{ 
           backgroundImage: "url('/prieska.jpg')",
@@ -53,7 +50,6 @@ export default function HomePage({ data }) {
         </div>
       </div>
 
-      {/* Stats bar */}
       <div style={{ background: "#fff", borderBottom: "1px solid #e2e8f0" }}>
         <div className="stat-grid" style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
           <div style={{ padding: "20px 24px", textAlign: "center", borderRight: "1px solid #e2e8f0" }}>
@@ -82,7 +78,7 @@ export default function HomePage({ data }) {
             onMouseEnter={(e) => (e.currentTarget.style.background = "#f8fafc")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            <div style={{ fontSize: 26, fontWeight: 800, color: "#1a4a7a" }}>{data.documents.length}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#1a4a7a" }}>{documents.length}</div>
             <div style={{ fontSize: 13, color: "#4a5568", fontWeight: 600 }}>Documents</div>
             <div style={{ fontSize: 11, color: "#718096" }}>available</div>
           </button>
@@ -124,7 +120,7 @@ export default function HomePage({ data }) {
               <button className="btn-outline" onClick={() => navigate("/news")}>View All</button>
             </div>
             <div style={{ display: "grid", gap: 14 }}>
-              {data.posts.slice(0, 4).map(post => <PostCard key={post.id} post={post} />)}
+              {posts.slice(0, 4).map(post => <PostCard key={post.id} post={post} />)}
             </div>
           </div>
         </div>

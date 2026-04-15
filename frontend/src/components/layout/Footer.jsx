@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon } from "../UI/Icons";
+import { useData } from "../../context/DataContext";
 
-export default function Footer({ data }) {
+export default function Footer() {
   const navigate = useNavigate();
+  const { notices } = useData();
   const [showVacanciesModal, setShowVacanciesModal] = useState(false);
   const [selectedVacancy, setSelectedVacancy] = useState(null);
 
-  // Safely get vacancies (notices with category "vacancy")
-  const vacancies = data?.notices?.filter(n => n.category === "vacancy") || [];
+  const vacancies = notices?.filter(n => n.category === "vacancy") || [];
 
-  // Debug: log vacancies count to console (remove in production)
   useEffect(() => {
     if (vacancies.length === 0) {
       console.warn("No vacancies found in data. Check your data store.");
@@ -37,7 +37,6 @@ export default function Footer({ data }) {
     <footer style={{ background: "#0d2d4f", color: "#a8c4e0", padding: "40px 20px 20px", marginTop: 60 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 32, marginBottom: 32 }}>
-          {/* Logo and description */}
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
               <img src="/LOGO.png" alt="Siyathemba Municipality Logo" style={{ width: 38, height: 38, objectFit: "contain", borderRadius: 4 }} />
@@ -51,7 +50,6 @@ export default function Footer({ data }) {
             </p>
           </div>
 
-          {/* Quick Links â€“ clickable */}
           <div>
             <h4 style={{ color: "#fff", fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Quick Links</h4>
             {[
@@ -78,7 +76,6 @@ export default function Footer({ data }) {
             ))}
           </div>
 
-          {/* Contact info */}
           <div>
             <h4 style={{ color: "#fff", fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Contact</h4>
             <div style={{ fontSize: 13, lineHeight: 2 }}>
@@ -91,7 +88,6 @@ export default function Footer({ data }) {
             </div>
           </div>
 
-          {/* Emergency Numbers */}
           <div>
             <h4 style={{ color: "#fff", fontSize: 14, fontWeight: 700, marginBottom: 12 }}>Emergency Numbers</h4>
             <div style={{ fontSize: 13, lineHeight: 2 }}>
@@ -104,7 +100,6 @@ export default function Footer({ data }) {
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div style={{
           borderTop: "1px solid rgba(255,255,255,0.1)",
           paddingTop: 16,
@@ -119,7 +114,6 @@ export default function Footer({ data }) {
         </div>
       </div>
 
-      {/* Vacancies Modal */}
       {showVacanciesModal && (
         <div style={{
           position: "fixed",
@@ -141,7 +135,6 @@ export default function Footer({ data }) {
             boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
             animation: "modalFadeIn 0.2s ease"
           }}>
-            {/* Modal Header */}
             <div style={{
               padding: "20px 24px",
               borderBottom: "1px solid #e2e8f0",
@@ -175,10 +168,8 @@ export default function Footer({ data }) {
               </button>
             </div>
 
-            {/* Modal Body */}
             <div style={{ padding: "24px" }}>
               {selectedVacancy ? (
-                // Detailed view
                 <div>
                   <button
                     onClick={() => setSelectedVacancy(null)}
@@ -202,8 +193,8 @@ export default function Footer({ data }) {
                       {selectedVacancy.title}
                     </h4>
                     <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#718096" }}>
-                      <span>ðŸ“… Posted: {formatDate(selectedVacancy.created_at)}</span>
-                      <span>ðŸ”– Category: {selectedVacancy.category}</span>
+                      <span>í³… Posted: {formatDate(selectedVacancy.created_at)}</span>
+                      <span>í´– Category: {selectedVacancy.category}</span>
                     </div>
                   </div>
                   <div style={{ lineHeight: 1.8, fontSize: 15, color: "#334155" }}>
@@ -221,7 +212,6 @@ export default function Footer({ data }) {
                   <p>No current vacancies. Please check back later.</p>
                 </div>
               ) : (
-                // List of vacancies â€“ all displayed
                 <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                   {vacancies.map(v => (
                     <div
@@ -241,8 +231,8 @@ export default function Footer({ data }) {
                         {v.title}
                       </h4>
                       <div style={{ display: "flex", gap: 12, marginBottom: 8, fontSize: 12, color: "#718096" }}>
-                        <span>ðŸ“… {formatDate(v.created_at)}</span>
-                        <span>ðŸ”– {v.category}</span>
+                        <span>í³… {formatDate(v.created_at)}</span>
+                        <span>í´– {v.category}</span>
                       </div>
                       <p style={{ fontSize: 13, color: "#4a5568", lineHeight: 1.6 }}>
                         {v.content.substring(0, 120)}â€¦

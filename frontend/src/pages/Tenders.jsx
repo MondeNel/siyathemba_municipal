@@ -1,15 +1,54 @@
 import { useState } from "react";
+import { useAdmin } from '../context/AdminContext';
+import { useData } from '../context/DataContext';
 import PageHeader from "../components/UI/PageHeader";
 import { catColor } from "../utils/helpers";
+import AdminModal from '../components/Admin/AdminModal';
 
-export default function TendersPage({ data }) {
+export default function TendersPage() {
+  const { isAdmin } = useAdmin();
+  const { tenders, addTender, editTender, removeTender } = useData();
   const [status, setStatus] = useState("open");
   const [cat, setCat] = useState("all");
-  const filtered = data.tenders.filter(t => (status === "all" || t.status === status) && (cat === "all" || t.category === cat));
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingTender, setEditingTender] = useState(null);
+  const [form, setForm] = useState({ reference: '', title: '', description: '', category: 'tender', closing_date: '', status: 'open' });
+
+  const filtered = tenders.filter(t => (status === "all" || t.status === status) && (cat === "all" || t.category === cat));
+
+  const openCreate = () => {
+    setEditingTender(null);
+    setForm({ reference: '', title: '', description: '', category: 'tender', closing_date: '', status: 'open' });
+    setModalOpen(true);
+  };
+
+  const openEdit = (tender) => {
+    setEditingTender(tender);
+    setForm({ reference: tender.reference, title: tender.title, description: tender.description, category: tender.category, closing_date: tender.closing_date, status: tender.status });
+    setModalOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (editingTender) {
+      await editTender(editingTender.id, form);
+    } else {
+      await addTender(form);
+    }
+    setModalOpen(false);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this tender?')) {
+      await removeTender(id);
+    }
+  };
 
   return (
     <div className="page-anim" style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 20px" }}>
-      <PageHeader title="Tenders & Quotations" subtitle="Current procurement opportunities and bid results" />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <PageHeader title="Tenders & Quotations" subtitle="Current procurement opportunities and bid results" />
+        {isAdmin && <button onClick={openCreate} className="btn-primary">+ Add Tender</button>}
+      </div>
       <div style={{ display: "flex", gap: 12, marginBottom: 24, flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: 6 }}>
           {["all", "open", "awarded", "closed"].map(s => (
@@ -30,7 +69,13 @@ export default function TendersPage({ data }) {
       )}
       <div style={{ display: "grid", gap: 14 }}>
         {filtered.map(t => (
-          <div key={t.id} className="card-hover" style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "20px 22px" }}>
+          <div key={t.id} className="card-hover" style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "20px 22px", position: 'relative' }}>
+            {isAdmin && (
+              <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 1, display: 'flex', gap: 8 }}>
+                <button onClick={() => openEdit(t)} className="btn-outline" style={{ padding: '4px 12px', fontSize: 12 }}>Edit</button>
+                <button onClick={() => handleDelete(t.id)} style={{ background: '#fee2e2', border: 'none', borderRadius: 6, padding: '4px 12px', fontSize: 12, fontWeight: 600, color: '#dc2626', cursor: 'pointer' }}>Delete</button>
+              </div>
+            )}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, marginBottom: 10 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6, flexWrap: "wrap" }}>
@@ -49,6 +94,26 @@ export default function TendersPage({ data }) {
           </div>
         ))}
       </div>
+
+      <AdminModal title={editingTender ? "Edit Tender" : "Add Tender"} isOpen={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleSubmit}>
+        <div><label>Reference</label><input className="admin-input" value={form.reference} onChange={e => setForm({...form, reference: e.target.value})} placeholder="SLM-T-2026-001" /></div>
+        <div><label>Title</label><input className="admin-input" value={form.title} onChange={e => setForm({...form, title: e.target.value})} /></div>
+        <div><label>Description</label><textarea className="admin-input" rows={3} value={form.description} onChange={e => setForm({...form, description: e.target.value})} /></div>
+        <div><label>Category</label>
+          <select className="admin-input" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+            <option value="tender">Tender</option>
+            <option value="quotation">Quotation</option>
+          </select>
+        </div>
+        <div><label>Closing Date (YYYY-MM-DD)</label><input className="admin-input" value={form.closing_date} onChange={e => setForm({...form, closing_date: e.target.value})} /></div>
+        <div><label>Status</label>
+          <select className="admin-input" value={form.status} onChange={e => setForm({...form, status: e.target.value})}>
+            <option value="open">Open</option>
+            <option value="awarded">Awarded</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+      </AdminModal>
     </div>
   );
 }
