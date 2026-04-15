@@ -40,6 +40,7 @@ class Notice(Base):
     content = Column(Text, nullable=False)
     category = Column(String, nullable=False)
     urgency = Column(String, default="normal")
+    file_url = Column(String, default="")
     created_at = Column(DateTime, server_default=func.now())
 
 class Tender(Base):
@@ -51,4 +52,7 @@ class Tender(Base):
     category = Column(String, nullable=False)
     closing_date = Column(String, nullable=False)
     status = Column(String, default="open")
+    file_url = Column(String, default="")
+    file_url = Column(String, default="")
+    document_url = Column(String, nullable=True)
     created_at = Column(DateTime, server_default=func.now())

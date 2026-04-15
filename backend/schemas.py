@@ -78,23 +78,59 @@ class DocumentResponse(DocumentBase):
     class Config:
         from_attributes = True
 
-# Notice Schemas
-class NoticeBase(BaseModel):
-    title: str
-    content: str
-    category: str
-    urgency: str = "normal"
+        from_attributes = True
 
-class NoticeCreate(NoticeBase):
+# Tender Schemas
+class TenderBase(BaseModel):
+    reference: str
+    title: str
+    description: str
+    category: str
+    closing_date: str
+    status: str = "open"
+    document_url: Optional[str] = None
+
+class TenderCreate(TenderBase):
     pass
 
-class NoticeUpdate(BaseModel):
+class TenderUpdate(BaseModel):
+    reference: Optional[str] = None
     title: Optional[str] = None
-    content: Optional[str] = None
+    description: Optional[str] = None
     category: Optional[str] = None
-    urgency: Optional[str] = None
+    closing_date: Optional[str] = None
+    status: Optional[str] = None
+    document_url: Optional[str] = None
 
-class NoticeResponse(NoticeBase):
+class TenderResponse(TenderBase):
+    id: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+# Tender Schemas with file_url
+class TenderBase(BaseModel):
+    reference: str
+    title: str
+    description: str
+    category: str
+    closing_date: str
+    status: str = "open"
+    file_url: str = ""  # new field
+
+class TenderCreate(TenderBase):
+    pass
+
+class TenderUpdate(BaseModel):
+    reference: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    closing_date: Optional[str] = None
+    status: Optional[str] = None
+    file_url: Optional[str] = None
+
+class TenderResponse(TenderBase):
     id: int
     created_at: datetime
     class Config:
@@ -108,6 +144,7 @@ class TenderBase(BaseModel):
     category: str
     closing_date: str
     status: str = "open"
+    file_url: str = ""
 
 class TenderCreate(TenderBase):
     pass
@@ -119,8 +156,33 @@ class TenderUpdate(BaseModel):
     category: Optional[str] = None
     closing_date: Optional[str] = None
     status: Optional[str] = None
+    file_url: Optional[str] = None
 
 class TenderResponse(TenderBase):
+    id: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+# Notice Schemas
+class NoticeBase(BaseModel):
+    title: str
+    content: str
+    category: str
+    urgency: str = "normal"
+    file_url: str = ""
+
+class NoticeCreate(NoticeBase):
+    pass
+
+class NoticeUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    category: Optional[str] = None
+    urgency: Optional[str] = None
+    file_url: Optional[str] = None
+
+class NoticeResponse(NoticeBase):
     id: int
     created_at: datetime
     class Config:
