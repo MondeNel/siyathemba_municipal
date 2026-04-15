@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const ReadItemsContext = createContext();
-const STORAGE_KEY = 'read_items_timestamps';
+const STORAGE_KEY = 'last_visit_timestamps';
 
 export function ReadItemsProvider({ children }) {
   const [timestamps, setTimestamps] = useState(() => {
@@ -13,6 +13,7 @@ export function ReadItemsProvider({ children }) {
     }
   });
 
+  // Mark a page as read by updating its last visit timestamp to now
   const markAsRead = useCallback((pageType) => {
     const now = new Date().toISOString();
     setTimestamps(prev => {
@@ -24,6 +25,7 @@ export function ReadItemsProvider({ children }) {
     });
   }, []);
 
+  // Get count of items newer than last visit
   const getUnseenCount = useCallback((pageType, items) => {
     const lastVisit = timestamps[pageType] ? new Date(timestamps[pageType]) : new Date(0);
     return items.filter(item => {
@@ -33,7 +35,7 @@ export function ReadItemsProvider({ children }) {
   }, [timestamps]);
 
   return (
-    <ReadItemsContext.Provider value={{ timestamps, markAsRead, getUnseenCount }}>
+    <ReadItemsContext.Provider value={{ markAsRead, getUnseenCount }}>
       {children}
     </ReadItemsContext.Provider>
   );

@@ -16,7 +16,7 @@ export default function EventsPage() {
 
   useEffect(() => {
     markAsRead('events');
-  }, [markAsRead]);
+  }, [markAsRead]); // Only runs once because markAsRead is stable
 
   const today = new Date().toISOString().split("T")[0];
   const upcoming = events.filter(e => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
