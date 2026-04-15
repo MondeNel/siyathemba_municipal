@@ -1,0 +1,29 @@
+venv/
+__pycache__/
+*.pyc
+.env
+# Virtual environments
+venv/
+env/
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Database files
+*.db
+*.sqlite
+
+# Uploaded files (optional, keep if needed)
+uploads/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
