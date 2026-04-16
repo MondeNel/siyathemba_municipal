@@ -1,77 +1,57 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Icon } from "./UI/Icons";
-import { useData } from "../context/DataContext";
 
-// Simple local answer engine using only the data from our app
-function getLocalAnswer(message, data) {
-  const msg = message.toLowerCase();
+async function askChatbot(message, data) {
   const today = new Date().toISOString().split("T")[0];
+  const upcomingEvents = data.events.filter(e => e.date >= today).slice(0, 5);
+  const openTenders = data.tenders.filter(t => t.status === "open").slice(0, 5);
+  const vacancies = data.notices.filter(n => n.category === "vacancy").slice(0, 5);
 
-  const upcomingEvents = data.events
-    .filter(e => e.date >= today)
-    .sort((a, b) => a.date.localeCompare(b.date));
-  const openTenders = data.tenders.filter(t => t.status === "open");
-  const vacancies = data.notices.filter(n => n.category === "vacancy");
-  const recentNews = data.posts.slice(0, 3);
+  const systemPrompt = `You are the official digital assistant for Siyathemba Local Municipality (NC077), Prieska, Northern Cape, South Africa.
 
-  // Upcoming events
-  if (msg.includes("event") || msg.includes("calendar") || msg.includes("meeting") || msg.includes("imbizo")) {
-    if (upcomingEvents.length === 0) return "There are no upcoming events scheduled at this time.";
-    const list = upcomingEvents.map(e => `📌 ${e.title} on ${e.date} at ${e.time}, ${e.location}`).join("\n");
-    return `Here are our upcoming events:\n${list}`;
-  }
+CONTACT:
+- Main: 053 492 3420 | info@siyathemba.gov.za
+- Address: Civic Centre, Prieska, 8940
+- Hours: Mon–Fri 07:30–16:00
+- Water emergencies: 053 492 0001 | Electricity: 053 492 0002
 
-  // Tenders & quotations
-  if (msg.includes("tender") || msg.includes("bid") || msg.includes("quotation") || msg.includes("procurement")) {
-    if (openTenders.length === 0) return "There are no open tenders or quotations at the moment.";
-    const list = openTenders.map(t => `📄 ${t.reference}: ${t.title} (Closes: ${t.closing_date})`).join("\n");
-    return `You can find the open tenders and quotations here:\n${list}`;
-  }
+UPCOMING EVENTS:
+${upcomingEvents.map(e => `- ${e.title} on ${e.date} at ${e.time}, ${e.location}`).join("\n")}
 
-  // Vacancies
-  if (msg.includes("vacancy") || msg.includes("vacancies") || msg.includes("job") || msg.includes("apply")) {
-    if (vacancies.length === 0) return "We don't have any open vacancies right now. Please check again soon.";
-    const list = vacancies.map(v => `🔹 ${v.title}`).join("\n");
-    return `We currently have the following vacancies:\n${list}\n\nPlease visit the 'Vacancies' page on our website for more details on how to apply.`;
-  }
+OPEN TENDERS:
+${openTenders.map(t => `- ${t.reference}: ${t.title} (closes ${t.closing_date})`).join("\n")}
 
-  // News / updates
-  if (msg.includes("news") || msg.includes("update") || msg.includes("latest")) {
-    if (recentNews.length === 0) return "No news updates are available at this time.";
-    const list = recentNews.map(n => `📰 ${n.title}`).join("\n");
-    return `Here are the latest news updates:\n${list}\n\nVisit the 'News' page to read the full articles.`;
-  }
+VACANCIES:
+${vacancies.map(v => `- ${v.title}`).join("\n")}
 
-  // Documents
-  if (msg.includes("document") || msg.includes("report") || msg.includes("idp") || msg.includes("policy") || msg.includes("budget")) {
-    const categories = [...new Set(data.documents.map(d => d.category))];
-    return `You can find official municipal documents like reports, IDPs, and policies on the 'Documents' page. We have documents available in these categories: ${categories.join(", ")}.`;
-  }
+RECENT NEWS:
+${data.posts.slice(0, 4).map(p => `- ${p.title}`).join("\n")}
 
-  // Contact details
-  if (msg.includes("contact") || msg.includes("phone") || msg.includes("email") || msg.includes("address")) {
-    return `You can reach us at:\n📞 Main Office: 053 492 3420\n📧 Email: info@siyathemba.gov.za\n🏛️ Address: Civic Centre, Du Plessis Street, Prieska, 8940\n\nFor emergencies, please call Water: 053 492 0001, Electricity: 053 492 0002, Police: 10111, Ambulance: 10177, Fire: 053 492 0003.`;
-  }
+AVAILABLE DOCS: IDP, Annual Financial Statements, Budget & Tariffs, SCM Policy, Spatial Development Framework
 
-  // Greetings
-  if (msg.match(/hello|hi|hey|good morning|good afternoon/)) {
-    return "Hello! I'm the Siyathemba Municipality assistant. How can I help you today?";
-  }
+Be concise, helpful and professional. Today is ${today}. For anything you cannot answer, provide the main office number.`;
 
-  // Default fallback
-  return "I'm sorry, I didn't quite understand that. You can ask me about upcoming events, open tenders, vacancies, latest news, documents, or our contact details.";
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 400,
+      system: systemPrompt,
+      messages: [{ role: "user", content: message }],
+    }),
+  });
+  const result = await response.json();
+  return result.content?.[0]?.text || "Please contact us at 053 492 3420 for assistance.";
 }
 
-export default function Chatbot({ open, setOpen }) {
-  const { posts, events, documents, notices, tenders } = useData();
+export default function Chatbot({ data, open, setOpen }) {
   const [messages, setMessages] = useState([
     { role: "bot", text: "Hello! I'm the Siyathemba Municipality assistant. I can help you with events, tenders, documents, contact details and more. How can I assist you today?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
-
-  const data = { posts, events, documents, notices, tenders };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -83,18 +63,20 @@ export default function Chatbot({ open, setOpen }) {
     setInput("");
     setMessages(m => [...m, { role: "user", text: userText }]);
     setLoading(true);
-    // Simulate a short delay for a natural feel, but no external API call
-    setTimeout(() => {
-      const reply = getLocalAnswer(userText, data);
+    try {
+      const reply = await askChatbot(userText, data);
       setMessages(m => [...m, { role: "bot", text: reply }]);
-      setLoading(false);
-    }, 300);
+    } catch {
+      setMessages(m => [...m, { role: "bot", text: "I'm having trouble connecting. Please call us at 053 492 3420 or email info@siyathemba.gov.za." }]);
+    }
+    setLoading(false);
   }, [input, data]);
 
   const suggestions = ["Upcoming events?", "Open tenders", "Download IDP", "Contact numbers", "Vacancies"];
 
   return (
     <>
+      {/* FAB button – GREEN */}
       <button
         onClick={() => setOpen(!open)}
         style={{
@@ -121,6 +103,7 @@ export default function Chatbot({ open, setOpen }) {
         {open ? <Icon.Close /> : <Icon.Chat />}
       </button>
 
+      {/* Chat window */}
       {open && (
         <div
           style={{
@@ -140,6 +123,7 @@ export default function Chatbot({ open, setOpen }) {
             animation: "slideIn 0.25s ease"
           }}
         >
+          {/* Header – GREEN gradient */}
           <div
             style={{
               background: "linear-gradient(135deg, #2e7d32, #1b5e20)",
@@ -168,6 +152,7 @@ export default function Chatbot({ open, setOpen }) {
             </div>
           </div>
 
+          {/* Messages */}
           <div
             style={{
               flex: 1,
@@ -233,6 +218,7 @@ export default function Chatbot({ open, setOpen }) {
             <div ref={bottomRef} />
           </div>
 
+          {/* Suggestions */}
           <div
             style={{
               padding: "8px 12px",
@@ -257,14 +243,19 @@ export default function Chatbot({ open, setOpen }) {
                   border: "1px solid #c8e6c9",
                   transition: "all 0.15s"
                 }}
-                onMouseEnter={(e) => { e.target.style.background = "#c8e6c9"; }}
-                onMouseLeave={(e) => { e.target.style.background = "#e8f5e9"; }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = "#c8e6c9";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = "#e8f5e9";
+                }}
               >
                 {s}
               </button>
             ))}
           </div>
 
+          {/* Input */}
           <div
             style={{
               padding: "10px 12px",

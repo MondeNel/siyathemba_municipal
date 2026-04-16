@@ -1,53 +1,30 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Icon } from '../UI/Icons';
 import { useAdmin } from "../../context/AdminContext";
-import { useData } from "../../context/DataContext";
-import { useReadItems } from "../../context/ReadItemsContext";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { posts, events, documents, notices, tenders } = useData();
-  const { isAdmin } = useAdmin();
-  const { timestamps, markAsRead } = useReadItems(); // We need to expose timestamps from context
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const { login, logout } = useAdmin();
+  const { isAdmin, login, logout } = useAdmin();
 
+  // Get current route path without leading slash, default to "home" for root
   const currentPath = location.pathname === "/" ? "home" : location.pathname.slice(1);
 
-  // Helper function to get unseen count
-  const getUnseenCount = (pageType, items) => {
-    const lastVisit = timestamps[pageType] ? new Date(timestamps[pageType]) : new Date(0);
-    return items.filter(item => {
-      if (!item.created_at) return false;
-      return new Date(item.created_at) > lastVisit;
-    }).length;
-  };
-
-  const showBadges = !isAdmin;
-  const newPosts = showBadges ? getUnseenCount('news', posts) : 0;
-  const newEvents = showBadges ? getUnseenCount('events', events) : 0;
-  const newDocuments = showBadges ? getUnseenCount('documents', documents) : 0;
-  const newNotices = showBadges ? getUnseenCount('notices', notices) : 0;
-  const newTenders = showBadges ? getUnseenCount('tenders', tenders) : 0;
-  const vacancies = notices.filter(n => n.category === "vacancy");
-  const newVacancies = showBadges ? getUnseenCount('vacancies', vacancies) : 0;
-
   const navItems = [
-    { id: "home", label: "Home", icon: <Icon.Home />, path: "/", badge: 0 },
-    { id: "news", label: "News", icon: <Icon.News />, path: "/news", badge: newPosts },
-    { id: "events", label: "Events", icon: <Icon.Calendar />, path: "/events", badge: newEvents },
-    { id: "documents", label: "Documents", icon: <Icon.Doc />, path: "/documents", badge: newDocuments },
-    { id: "notices", label: "Notices", icon: <Icon.Bell />, path: "/notices", badge: newNotices },
-    { id: "tenders", label: "Tenders", icon: <Icon.Tender />, path: "/tenders", badge: newTenders },
-    { id: "vacancies", label: "Vacancies", icon: <Icon.Briefcase />, path: "/vacancies", badge: newVacancies },
-    { id: "council", label: "Council", icon: <Icon.Briefcase />, path: "/council", badge: 0 },
-    { id: "contact", label: "Contact", icon: <Icon.Phone />, path: "/contact", badge: 0 },
+    { id: "home", label: "Home", icon: <Icon.Home />, path: "/" },
+    { id: "news", label: "News", icon: <Icon.News />, path: "/news" },
+    { id: "events", label: "Events", icon: <Icon.Calendar />, path: "/events" },
+    { id: "documents", label: "Documents", icon: <Icon.Doc />, path: "/documents" },
+    { id: "notices", label: "Notices", icon: <Icon.Bell />, path: "/notices" },
+    { id: "tenders", label: "Tenders", icon: <Icon.Tender />, path: "/tenders" },
+    { id: "council", label: "Council", icon: <Icon.Briefcase />, path: "/council" },
+    { id: "contact", label: "Contact", icon: <Icon.Phone />, path: "/contact" },
   ];
 
   const navigateTo = (path) => {
@@ -64,22 +41,6 @@ export default function Navbar() {
     } else {
       setLoginError("Invalid email or password");
     }
-  };
-
-  const badgeStyle = {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#ef4444",
-    color: "white",
-    fontSize: "10px",
-    fontWeight: "bold",
-    borderRadius: "9999px",
-    minWidth: "18px",
-    height: "18px",
-    padding: "0 5px",
-    marginLeft: "6px",
-    lineHeight: "1",
   };
 
   return (
@@ -110,13 +71,10 @@ export default function Navbar() {
                 fontWeight: currentPath === item.id ? 700 : 500,
                 background: "transparent",
                 border: "none",
-                cursor: "pointer",
-                position: "relative",
+                cursor: "pointer"
               }}
             >
-              {item.icon}
-              {item.label}
-              {item.badge > 0 && <span style={badgeStyle}>{item.badge}</span>}
+              {item.icon}{item.label}
             </button>
           ))}
           {!isAdmin ? (
@@ -130,7 +88,8 @@ export default function Navbar() {
           )}
         </div>
 
-        <button className="mobile-only" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{ color: "#fff", padding: 8, background: "none", border: "none", cursor: "pointer" }}>
+        <button className="mobile-only" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          style={{ color: "#fff", padding: 8, background: "none", border: "none", cursor: "pointer" }}>
           {mobileMenuOpen ? <Icon.Close /> : <Icon.Menu />}
         </button>
       </div>
@@ -153,13 +112,10 @@ export default function Navbar() {
                 background: currentPath === item.id ? "rgba(255,255,255,0.1)" : "transparent",
                 border: "none",
                 cursor: "pointer",
-                textAlign: "left",
-                position: "relative",
+                textAlign: "left"
               }}
             >
-              {item.icon}
-              {item.label}
-              {item.badge > 0 && <span style={{ ...badgeStyle, marginLeft: "auto" }}>{item.badge}</span>}
+              {item.icon}{item.label}
             </button>
           ))}
           {!isAdmin ? (
@@ -174,25 +130,107 @@ export default function Navbar() {
         </div>
       )}
 
+      {/* Admin Login Modal (unchanged) */}
       {showAdminModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000, backdropFilter: "blur(4px)" }}>
-          <div style={{ background: "#fff", borderRadius: 20, width: 450, maxWidth: "90%", maxHeight: "85vh", overflow: "auto", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)", animation: "modalFadeIn 0.2s ease" }}>
-            <div style={{ padding: "20px 24px", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc", borderRadius: "20px 20px 0 0" }}>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 2000,
+          backdropFilter: "blur(4px)",
+        }}>
+          <div style={{
+            background: "#fff",
+            borderRadius: 20,
+            width: 450,
+            maxWidth: "90%",
+            maxHeight: "85vh",
+            overflow: "auto",
+            boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+            animation: "modalFadeIn 0.2s ease",
+          }}>
+            <div style={{
+              padding: "20px 24px",
+              borderBottom: "1px solid #e2e8f0",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              background: "#f8fafc",
+              borderRadius: "20px 20px 0 0",
+            }}>
               <h3 style={{ fontSize: 20, fontWeight: 700, color: "#1a202c", margin: 0 }}>Admin Login</h3>
-              <button onClick={() => setShowAdminModal(false)} style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "#94a3b8", padding: "0 8px", transition: "color 0.15s" }} onMouseEnter={(e) => e.target.style.color = "#1a202c"} onMouseLeave={(e) => e.target.style.color = "#94a3b8"}>&times;</button>
+              <button onClick={() => setShowAdminModal(false)} style={{
+                background: "none",
+                border: "none",
+                fontSize: 24,
+                cursor: "pointer",
+                color: "#94a3b8",
+                padding: "0 8px",
+                transition: "color 0.15s",
+              }} onMouseEnter={(e) => e.target.style.color = "#1a202c"} onMouseLeave={(e) => e.target.style.color = "#94a3b8"}>
+                &times;
+              </button>
             </div>
             <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 18 }}>
-              {loginError && <div style={{ background: "#fee2e2", border: "1px solid #fecaca", borderRadius: 8, padding: "10px 12px", color: "#dc2626", fontSize: 13, fontWeight: 500 }}>{loginError}</div>}
+              {loginError && (
+                <div style={{ background: "#fee2e2", border: "1px solid #fecaca", borderRadius: 8, padding: "10px 12px", color: "#dc2626", fontSize: 13, fontWeight: 500 }}>
+                  {loginError}
+                </div>
+              )}
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <label style={{ fontSize: 13, fontWeight: 600, color: "#334155" }}>Email Address</label>
-                <input type="email" placeholder="admin@siyathemba.gov.za" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} style={{ width: "100%", padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "14px", outline: "none", transition: "border-color 0.15s, box-shadow 0.15s" }} onFocus={(e) => { e.target.style.borderColor = "#1a4a7a"; e.target.style.boxShadow = "0 0 0 3px rgba(26,74,122,0.1)"; }} onBlur={(e) => { e.target.style.borderColor = "#cbd5e1"; e.target.style.boxShadow = "none"; }} />
+                <input
+                  type="email"
+                  placeholder="admin@siyathemba.gov.za"
+                  value={adminEmail}
+                  onChange={(e) => setAdminEmail(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    outline: "none",
+                    transition: "border-color 0.15s, box-shadow 0.15s",
+                  }}
+                  onFocus={(e) => { e.target.style.borderColor = "#1a4a7a"; e.target.style.boxShadow = "0 0 0 3px rgba(26,74,122,0.1)"; }}
+                  onBlur={(e) => { e.target.style.borderColor = "#cbd5e1"; e.target.style.boxShadow = "none"; }}
+                />
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <label style={{ fontSize: 13, fontWeight: 600, color: "#334155" }}>Password</label>
-                <input type="password" placeholder="••••••••" value={adminPassword} onChange={(e) => setAdminPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()} style={{ width: "100%", padding: "8px 12px", border: "1px solid #cbd5e1", borderRadius: "8px", fontSize: "14px", outline: "none", transition: "border-color 0.15s, box-shadow 0.15s" }} onFocus={(e) => { e.target.style.borderColor = "#1a4a7a"; e.target.style.boxShadow = "0 0 0 3px rgba(26,74,122,0.1)"; }} onBlur={(e) => { e.target.style.borderColor = "#cbd5e1"; e.target.style.boxShadow = "none"; }} />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={adminPassword}
+                  onChange={(e) => setAdminPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAdminLogin()}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    outline: "none",
+                    transition: "border-color 0.15s, box-shadow 0.15s",
+                  }}
+                  onFocus={(e) => { e.target.style.borderColor = "#1a4a7a"; e.target.style.boxShadow = "0 0 0 3px rgba(26,74,122,0.1)"; }}
+                  onBlur={(e) => { e.target.style.borderColor = "#cbd5e1"; e.target.style.boxShadow = "none"; }}
+                />
               </div>
             </div>
-            <div style={{ padding: "16px 24px", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end", gap: 12, background: "#f8fafc", borderRadius: "0 0 20px 20px" }}>
+            <div style={{
+              padding: "16px 24px",
+              borderTop: "1px solid #e2e8f0",
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 12,
+              background: "#f8fafc",
+              borderRadius: "0 0 20px 20px",
+            }}>
               <button onClick={() => setShowAdminModal(false)} className="btn-outline" style={{ padding: "8px 20px" }}>Cancel</button>
               <button onClick={handleAdminLogin} className="btn-primary" style={{ padding: "8px 24px" }}>Login</button>
             </div>

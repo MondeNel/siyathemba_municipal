@@ -9,23 +9,16 @@ import EventsPage from "./pages/Events";
 import DocumentsPage from "./pages/Documents";
 import NoticesPage from "./pages/Notices";
 import TendersPage from "./pages/Tenders";
-import VacanciesPage from "./pages/Vacancies";
 import ContactPage from "./pages/Contact";
 import CouncilPage from "./pages/Council";
 import ArticleView from "./pages/ArticleView";
+import { useData } from "./hooks/useData";
 import { AdminProvider } from "./context/AdminContext";
-import { DataProvider, useData } from "./context/DataContext";
-import { ReadItemsProvider } from "./context/ReadItemsContext";
 
+// Wrapper component that provides data to pages
 function AppContent() {
-  const { loading, posts, events, documents, notices, tenders } = useData();
+  const { data, setData } = useData();
   const [chatOpen, setChatOpen] = useState(false);
-
-  if (loading) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>;
-  }
-
-  const data = { posts, events, documents, notices, tenders };
 
   return (
     <div style={{ minHeight: "100vh", fontFamily: "'Segoe UI', system-ui, sans-serif", background: "#f4f6f8", color: "#1a202c" }}>
@@ -51,7 +44,6 @@ function AppContent() {
         .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; }
         .tag { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         .chat-bubble { animation: slideIn 0.25s ease; }
-        .admin-input { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; margin-top: 4px; }
         @media (max-width: 768px) {
           .desktop-only { display: none !important; }
           .mobile-grid { grid-template-columns: 1fr !important; }
@@ -68,6 +60,7 @@ function AppContent() {
         }
       `}</style>
 
+      {/* Top bar */}
       <div style={{ background: "#0d2d4f", color: "#a8c4e0", fontSize: 12, padding: "6px 0" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
@@ -84,33 +77,32 @@ function AppContent() {
         </div>
       </div>
 
-      <Navbar />
+      <Navbar data={data} />
       <main style={{ minHeight: "calc(100vh - 180px)" }}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/news" element={<NewsPage />} />
-          <Route path="/news/:id" element={<ArticleViewWrapper />} />
-          <Route path="/events" element={<EventsPage />} />
-          <Route path="/documents" element={<DocumentsPage />} />
-          <Route path="/notices" element={<NoticesPage />} />
-          <Route path="/tenders" element={<TendersPage />} />
-          <Route path="/vacancies" element={<VacanciesPage />} />
+          <Route path="/" element={<HomePage data={data} />} />
+          <Route path="/news" element={<NewsPage data={data} />} />
+          <Route path="/news/:id" element={<ArticleViewWrapper data={data} />} />
+          <Route path="/events" element={<EventsPage data={data} />} />
+          <Route path="/documents" element={<DocumentsPage data={data} />} />
+          <Route path="/notices" element={<NoticesPage data={data} />} />
+          <Route path="/tenders" element={<TendersPage data={data} />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/council" element={<CouncilPage />} />
+          <Route path="/council" element={<CouncilPage data={data} setData={setData} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <Footer />
-      <Chatbot open={chatOpen} setOpen={setChatOpen} />
+      <Footer data={data} />
+      <Chatbot data={data} open={chatOpen} setOpen={setChatOpen} />
     </div>
   );
 }
 
-function ArticleViewWrapper() {
+// Wrapper for article view to get post by ID from URL
+function ArticleViewWrapper({ data }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { posts } = useData();
-  const post = posts.find(p => p.id === parseInt(id));
+  const post = data.posts.find(p => p.id === id);
   if (!post) return <Navigate to="/news" replace />;
   return <ArticleView post={post} onBack={() => navigate(-1)} />;
 }
@@ -118,13 +110,9 @@ function ArticleViewWrapper() {
 function App() {
   return (
     <AdminProvider>
-      <DataProvider>
-        <ReadItemsProvider>
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </ReadItemsProvider>
-      </DataProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
     </AdminProvider>
   );
 }
