@@ -1,11 +1,22 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./siyathemba.db"
+# Use environment variable for database URL (Render persistent disk)
+# Default to local file for development
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./siyathemba.db")
+
+# For SQLite, we need to ensure the directory exists
+# Extract the file path from the URL (remove 'sqlite:///')
+if DATABASE_URL.startswith("sqlite:///"):
+    db_path = DATABASE_URL.replace("sqlite:///", "")
+    db_dir = os.path.dirname(db_path)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    DATABASE_URL, connect_args={"check_same_thread": False}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
